@@ -1,12 +1,14 @@
+require("dotenv").config()
 const express = require('express');
 const mongoose = require('mongoose');
 const Character = require("./models/Character")
 const app = express();
+const port = 3000 || process.env.PORT;
 
 //Conexão com Banco de Dados
 try{
     mongoose.connect(
-        "mongodb+srv://root:admin-hp@cluster0.eld6e.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", 
+        process.env.DATABASE_URI,//traz conexão do BD do arquivo .env
         {
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -21,26 +23,7 @@ try{
 app.use(express.json());
 
 
-//Simula o Banco de Dados
-/*const characters = [
-    {
-        id: 1,
-        name: "Harry Potter",
-        spacies: "human",
-        house: "Gryffindor",
-        actor: "Daniel Redcliffe"
-    },
-    {
-        id: 2,
-        name: "Hermione Granger",
-        spacies: "human",
-        house: "Gryffindor",
-        actor: "Emma Watson"
-    },
-]
-*/
-
-// -- Rotas --
+// -- Rotas-EndPoints --
 
 //GET - READ
 app.get('/characters', async (req, res) => {
@@ -69,7 +52,6 @@ app.get("/character/:id", async (req,res) =>{
     }
     res.send(character)
 })
-
 
 //POST - CREATE
 app.post("/character", async (req,res) =>{
@@ -148,6 +130,6 @@ app.delete("/character/:id", async (req,res) => {
 
 
 
-app.listen(3000, () => {
-    console.log("Servidor rodando em: http://localhost:3000")
+app.listen(port, () => {
+    console.log(`Servidor rodando em: http://localhost:${port}`)
 })
