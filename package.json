@@ -1,0 +1,16 @@
+{
+  "name": "api_hp",
+  "version": "1.0.0",
+  "description": "API para fazer o CRUD  de personagens do Harry Potter",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "dev": "nodemon index"
+  },
+  "author": "Akyra Brasil",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.3",
+    "nodemon": "^2.0.15"
+  }
+}
