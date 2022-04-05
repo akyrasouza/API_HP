@@ -43,9 +43,33 @@ app.use(express.json());
 // -- Rotas --
 
 //GET - READ
-app.get('/',(req, res) => {
-  res.send(characters.filter(Boolean))
+app.get('/characters', async (req, res) => {
+    const characters = await Character.find();//faz pesquisa e traz tudo da Coleção (Schema)
+
+    if(characters.length === 0){
+        return res.status(404).send({message: "Não existem personagens cadastrados!"})
+    }
+    res.send(characters.filter(Boolean))
 })
+
+//GetByID - Pegar o Personagem pelo ID
+app.get("/character/:id", async (req,res) =>{
+   const {id} = req.params;
+
+    if(!mongoose.Types.ObjectId.isValid(id)){//Verifica se 'id' é válido
+        res.status(400).send({message: "Id inválido!"})
+        return
+    }
+
+    const character = await Character.findById(id)//pesquisa na Coleção pelo 'id' e retorna o resultado
+
+    if(!character){
+        res.status(404).send({message: "Personagem não encontrado!"})
+        return
+    }
+    res.send(character)
+})
+
 
 //POST - CREATE
 app.post("/character", async (req,res) =>{
@@ -58,7 +82,10 @@ app.post("/character", async (req,res) =>{
 
     //Criação do Novo Documento na Coleção (Schema)
     const character = await new Character({
-        name, species, house, actor,
+        name, 
+        species, 
+        house,
+         actor,
     })
 
     await character.save()//salvando no Banco de Dados
@@ -66,61 +93,52 @@ app.post("/character", async (req,res) =>{
     res.send({message: "Personagem criado com sucesso!"})
 });
 
-//GetByID - Pegar o Personagem pelo ID
-app.get("/character/:id", (req,res) =>{
-    const id = +req.params.id;//'+' transforma o que vier da requisição em número.
-
-    //pesquisa no array o character(personagem) que tem o mesmo id que veio da requisição e retorna todo o objeto
-    const character = characters.find(item => item.id === id);
-
-    if(!character){
-        res.status(404).send({message: "Personagem não existe!"})
-        return
-    }
-    res.send(character)
-})
-
 //PUT - UPDATE
-app.put("/character/:id", (req,res)=>{
-    const id = +req.params.id;
-    const character = characters.find((item) => item.id === id);
+app.put("/character/:id", async (req,res)=>{
+    const {id} = req.params;
 
-    if(!character){
-        res.status(404).send({message: "Personagem não exite!"});
+    if(!mongoose.Types.ObjectId.isValid(id)){//Verifica se 'id' é válido
+        res.status(400).send({message: "Id inválido!"})
         return
     }
-    //Foma Comum
-    // const newCharacter = req.body;
-    // character.name = newCharacter.name;
-    // character.spacies = newCharacter.spacies;
-    // character.house = newCharacter.house;
-    // character.actor = newCharacter.actor;
 
-    //Usando Destructuring (Desconstrução)
-    const {name, spacies, house, actor} = req.body;
+    const character = await Character.findById(id)//pesquisa na Coleção pelo 'id' e retorna o resultado
+
+    if(!character){
+        res.status(404).send({message: "Personagem não encontrado!"})
+        return
+    }
+
+    const {name, species, house, actor} = req.body;
+
+    if(!name || ! species || !house || !actor){
+        res.status(400).send({message: "Você não enviou todos os dados necessários para a atualização"});
+        return;
+    }
 
     character.name = name;
-    character.spacies = spacies;
+    character.species= species;
     character.house = house;
     character.actor = actor;
 
-    res.send(character);
+    await character.save();
+
+    res.send({message: `Personagem atualizado com sucesso! ${character}`});
 });
 
 //DELETE - DELETE
-app.delete("/character/:id", (req,res) => {
-    const id = +req.params.id;
-    const character = characters.find((item) => item.id === id);
+app.delete("/character/:id", async (req,res) => {
+    const {id} = req.params;
 
-    if(!character){
-        res.status(404).send({message: "Personagem não exite!"});
+    if(!mongoose.Types.ObjectId.isValid(id)){//Verifica se 'id' é válido
+        res.status(400).send({message: "Id inválido!"})
         return
     }
 
-    //Buscando o 'character' (personagem) pelo index (posição no Array)
-    const indexCharacter = characters.indexOf(character);
-    delete characters[indexCharacter];
+    const character = await Character.findById(id);
 
+    await character.remove();
+    
     res.send({message: "Personagem Deletado com sucesso!"})
 })
 
