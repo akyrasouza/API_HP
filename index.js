@@ -1,13 +1,28 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const mongoose = require('mongoose');
+const Character = require("./models/Character")
+const app = express();
+
+//Conexão com Banco de Dados
+try{
+    mongoose.connect(
+        "mongodb+srv://root:admin-hp@cluster0.eld6e.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", 
+        {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        }
+    );
+    console.log("Banco de dados conectado!");
+}catch (err) {
+    console.log(`Erro ao conectar no Banco de dados ${err}`)
+}
 
 //Transformando a resposta para o servidor em json()
-app.use(express.json())
+app.use(express.json());
 
-// -- Rotas --
 
-//Vai Simular o Banco de Dados
-const characters = [
+//Simula o Banco de Dados
+/*const characters = [
     {
         id: 1,
         name: "Harry Potter",
@@ -23,6 +38,9 @@ const characters = [
         actor: "Emma Watson"
     },
 ]
+*/
+
+// -- Rotas --
 
 //GET - READ
 app.get('/',(req, res) => {
@@ -30,11 +48,20 @@ app.get('/',(req, res) => {
 })
 
 //POST - CREATE
-app.post("/character", (req,res) =>{
-    const character = req.body;
+app.post("/character", async (req,res) =>{
+    const {name, species, house, actor} = req.body;
 
-    character.id = characters.length + 1;// criando propriedade 'id'
-    characters.push(character);
+    if(!name || ! species || !house || !actor){
+        res.status(400).send({message: "Você não enviou todos os dados necessários para o cadastro"});
+        return;
+    }
+
+    //Criação do Novo Documento na Coleção (Schema)
+    const character = await new Character({
+        name, species, house, actor,
+    })
+
+    await character.save()//salvando no Banco de Dados
 
     res.send({message: "Personagem criado com sucesso!"})
 });
