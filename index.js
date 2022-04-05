@@ -137,8 +137,12 @@ app.delete("/character/:id", async (req,res) => {
 
     const character = await Character.findById(id);
 
+    if(!character){
+        return  res.status(404).send({message: "Personagem não existe!"})
+    }
+
     await character.remove();
-    
+
     res.send({message: "Personagem Deletado com sucesso!"})
 })
 
