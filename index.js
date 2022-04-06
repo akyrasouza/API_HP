@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Character = require("./models/Character")
 const app = express();
-const port = 3000 || process.env.PORT;
+const port =  process.env.PORT || 3000;//utiliza porta 3000 ou a porta do Servidor
 
 //Conexão com Banco de Dados
 try{
